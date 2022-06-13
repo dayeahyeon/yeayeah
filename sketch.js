@@ -1,28 +1,30 @@
 var musculus;
-let capture;
-let cScale = 16;
+let point = [];
+let number = 0;
+let interval = 0;
+let mode = 1;
+
+function preload() {
+  image1 = loadImage ("image1.png")
+  image2 = loadImage ("image2.png")
+  image3 = loadImage ("image3.png")
+}
 
 
-var x = 10;
-var y = 10;
-
-function setup() {
-  
-  
-  createCanvas(800, 600);
-  colorMode(HSB);
-  
-  pixelDensity(1);
-  capture = createCapture(VIDEO);
-  capture.size(width / cScale, height / cScale);
-  
-  
+function setup() { 
+  createCanvas(800,800);
+  frameRate(10);
+  noStroke();
+  image1.resize(width,height);
+  image2.resize(width,height);
+  image3.resize(width,height);
+  resetBG();
 }
 
 function draw() {
-  background(0);
-  capture.loadPixels();
-  if (musculus === 'screen1') {
+  
+  
+   if (musculus === 'screen1') {
     screen1();
   } else if (musculus === 'screen2') {
     screen2();
@@ -30,8 +32,11 @@ function draw() {
     else if (musculus === 'screen3') {
     screen3();
   }
-}
   
+  
+}
+
+
 function keyTyped() {
   if (key === 'a') {
     musculus = 'screen1';
@@ -41,102 +46,135 @@ function keyTyped() {
     musculus = 'screen3';
     }
 }
+
+function resetBG() {
   
-function screen1() {
-  
-  noStroke();
-  for(y=10;y<=790;y=y+20){
-	for(x=10;x<=590;x=x+20){
-    }
-  }
-  
-  let ratioX = width/capture.width;
-  let ratioY = height/capture.height;
-  
-  for (let y = 0; y < capture.height; y++){
-    for (let x = 0; x< capture.width; x++){
-      let idx = (capture.width - x + 1 + (y * capture.width))*4
-      
-      let r = capture.pixels[idx + 0];
-      let g = capture.pixels[idx + 1];
-      let b = capture.pixels[idx + 2];
-      let bright = (r + g + b) / 3
-      let w = map(bright, 0, 225, 0, cScale);
-      
-      noStroke();
-      
-      fill(random(mouseX),random(mouseY),100, 50);
-      ellipseMode(CENTER)
-      ellipse(x * ratioX + random(-40), y * ratioY + random(-5), w, w)
-    }
+  switch (mode) {
+    case 1:
+      screen1();
+      break;
+    case 2:
+      screen2();
+      break;
+    case 3:
+      screen3();   
+      break;
+    default:
+      //  
   }
 }
 
+function mouseDragged() {
+   interval++
+   if(interval >= 5){
+       let h = (mode-1)*80 + 80;
+      splash(mouseX, mouseY, random(h, h+100));
+      interval = 0;
+   }
+}
+
+
+function splash(x,y,hue) {
+  fill(RGB,200,230,360);
+  push();
+  translate(x,y);
+  let dropNum = random(50,300);
+  for(let i = 0; i < dropNum; i++){
+    let size = pow(random(1), 20);
+    let distance = sq((1.0 - pow(size, 2)) * random(1));
+    let dia = map(size, 0, 1, 1, 50);
+    let dx = map(distance, 0, 1, 0, 200) * cos(random(2*PI));
+    let dy = map(distance, 0, 1, 0, 200) * sin(random(2*PI));
+
+    ellipse(dx, dy, dia, dia);
+    if(dia>5){
+      point.push([x+dx, y+dy, dia, hue]);
+    }
+  }
+  pop();
+}
+
+
+function screen1() {
+  
+  for(let i = 0; i < point.length; i++){
+    
+    fill(point[i][3],100,10,300);
+    
+    ellipse(point[i][0], point[i][1], point[i][2], point[i][2]);
+    point[i][1] += point[i][2]/4;
+    point[i][2] *= (51-point[i][2])/50;
+    if(point[i][2]<1.0001)point.splice(i,1);
+    
+  }
+  
+  for (let i=0;i<600;i++){
+
+	let x = int(random(width));
+	let y = int(random(height));
+	let col =image1.get(x,y);
+	noStroke();
+	fill(col,10);
+		push();
+		let angle = 30
+		translate(x,y);
+		rotate(radians(angle));
+		rect(0,0,1,random(1,100));
+		pop();
+ }
+}
 
 function screen2() {
-  background(0);
-  capture.loadPixels();
   
-  let ratioX = width/capture.width;
-  let ratioY = height/capture.height;
-  
-  let gradient = drawingContext.createLinearGradient(20,20,ratioX, ratioY);
-  drawingContext.fillStyle = gradient;
-  noStroke();
-  for(y=10;y<=700;y=y+20){
-	for(x=10;x<=500;x=x+20){
-    }
+  for(let i = 0; i < point.length; i++){
+    fill(point[i][3], 200,300,100);
+    ellipse(point[i][0], point[i][1], point[i][2], point[i][2]);
+    point[i][1] += point[i][2]/4;
+    point[i][2] *= (51-point[i][2])/50;
+    if(point[i][2]<1.0001)point.splice(i,1);
+    
   }
-   
+    
+   for (let i=0;i<300;i++){
 
-  
-  for (let y = 0; y < capture.height; y++){
-    for (let x = 0; x< capture.width; x++){
-      let idx = (capture.width - x + 1 + (y * capture.width))*4
-      
-      let r = capture.pixels[idx + 0];
-      let g = capture.pixels[idx + 1];
-      let b = capture.pixels[idx + 2];
-      let bright = (r + g + b) / 3
-      let w = map(bright, 0, 225, 0, cScale);
-      
-      noStroke();
-      
-      fill((x+mouseY),(y+mouseX),(x*y));
-      ellipseMode(CENTER)
-      ellipse(x * ratioX + random(-5), y * ratioY + random(-40), w, w)
-    }
-  }
+	let x = int(random(width));
+	let y = int(random(height));
+	let col =image2.get(x,y);
+	noStroke();
+	fill(col,10);
+		push();
+		let angle = 60
+		translate(x,y);
+		rotate(radians(angle));
+		rect(0,0,1,random(1,100));
+		pop();
+ }
 }
 
 function screen3() {
-   noStroke();
-  for(y=10;y<=790;y=y+20){
-	for(x=10;x<=590;x=x+20){
-    }
+  
+  for(let i = 0; i < point.length; i++){
+    
+    fill(point[i][3],10,80,200);
+    ellipse(point[i][0], point[i][1], point[i][2], point[i][2]);
+    point[i][1] += point[i][2]/4;
+    point[i][2] *= (51-point[i][2])/50;
+    if(point[i][2]<1.0001)point.splice(i,1);
+    
   }
   
-  let ratioX = width/capture.width;
-  let ratioY = height/capture.height;
-  
-  for (let y = 0; y < capture.height; y++){
-    for (let x = 0; x< capture.width; x++){
-      let idx = (capture.width - x + 1 + (y * capture.width))*4
-      
-      let r = capture.pixels[idx + 0];
-      let g = capture.pixels[idx + 1];
-      let b = capture.pixels[idx + 2];
-      let bright = (r + g + b) / 3
-      let w = map(bright, 0, 225, 0, cScale);
-      
-      noStroke();
-      
-      fill(random(255))
-      ellipseMode(CENTER)
-      ellipse(x * ratioX + random(-40), y * ratioY + random(-40), w, w)
-    }
-  }
-  
+   for (let i=0;i<600;i++){
+
+	let x = int(random(width));
+	let y = int(random(height));
+	let col =image3.get(x,y);
+	noStroke();
+	fill(col,10);
+		push();
+		let angle = 90
+		translate(x,y);
+		rotate(radians(angle));
+		rect(0,0,1,random(1,100));
+		pop();
+ }
 }
- 
-  
